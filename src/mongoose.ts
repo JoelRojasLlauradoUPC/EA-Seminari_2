@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import { UserModel, IUser } from './user.js';
 import { OrganizationModel, IOrganization } from './organization.js';
+import { RequirementModel, IRequirement } from './requirement.js';
+import { makeCrud } from './crud.js';
 
 async function runDemo() {
   try {
@@ -13,6 +15,7 @@ async function runDemo() {
     console.log('🧹 Cleaning database...');
     await UserModel.deleteMany({});
     await OrganizationModel.deleteMany({});
+    await RequirementModel.deleteMany({});
 
     // --- 3. SEEDING (The missing part) ---
     console.log('🌱 Seeding data...');
@@ -38,11 +41,41 @@ async function runDemo() {
     const users = await UserModel.insertMany(usersData);
     console.log(`✅ Seeded ${usersData.length} users and ${orgs.length} organizations`);
 
+    // 3.3 Create a couple of Requirements linked to organizations
+    const reqs = await RequirementModel.insertMany([
+      { title: 'Security audit', description: 'Run basic security checks', organization: initechId },
+      { title: 'Backup plan', description: 'Daily backups', organization: umbrellaId }
+    ]);
+    console.log(`✅ Seeded ${reqs.length} requirements`);
+
     // --- 4.1 DEMO: CRUD OPERATIONS ---
     console.log('\n🔧 CRUD DEMO:');
     // We find the first user by _id
     const user: IUser | null = await UserModel.findById(users[0]._id);
     console.log(`User: ${user?.name}`);
+
+    // Simple demo of the new CRUD factory for `Requirement`
+    const RequirementService = makeCrud<IRequirement>(RequirementModel, ['organization']);
+
+    // Create (using factory)
+    const newReq = await RequirementService.create({ title: 'New feature spec', organization: initechId as any });
+    console.log('Created requirement:', newReq.title);
+
+    // getById (populated)
+    const fetchedReq = await RequirementService.getById(newReq._id as any);
+    console.log('Fetched requirement (populated):', fetchedReq);
+
+    // update
+    const updatedReq = await RequirementService.update(newReq._id as any, { description: 'Add acceptance criteria' });
+    console.log('Updated:', updatedReq?.description);
+
+    // listAll (uses .lean())
+    const allReqs = await RequirementService.listAll();
+    console.log('All requirements (lean):', allReqs.length);
+
+    // delete
+    await RequirementService.delete(newReq._id as any);
+    console.log('Deleted newly created requirement');
     
     // We find a user by name
     const bill = await UserModel.findOne({ name: 'Bill' });
