@@ -50,3 +50,6 @@ No s'ha utilitzat IA generativa durant el desenvolupament del codi. No obstant, 
 
 D'entre les suggerencies que es van obtenir s'han implementat les següents:
 - Millora i compactació de l'estructura de crud.ts per tal de simplificar-lo, centralitzant totes les operacions que involucren la nova clase enllaçada.
+
+## Vídeo amb la DEMO
+https://youtu.be/wyxxrFBrcIM
