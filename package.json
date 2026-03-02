@@ -4,18 +4,9 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/mongoose.js",
-    "demo": "ts-node src/mongoose.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "mongoose": "^6.13.9"
-  },
-  "devDependencies": {
-    "@types/mongoose": "^5.11.96",
-    "@types/node": "^25.3.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "mongoose": "^6.13.8"
   }
 }

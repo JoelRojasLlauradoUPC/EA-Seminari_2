@@ -1,8 +1,6 @@
 import mongoose from 'mongoose';
 import { UserModel, IUser } from './user.js';
 import { OrganizationModel, IOrganization } from './organization.js';
-import { ArticleModel, IArticle } from './article.js';
-import * as articleService from './articleService.js';
 
 async function runDemo() {
   try {
@@ -15,7 +13,6 @@ async function runDemo() {
     console.log('🧹 Cleaning database...');
     await UserModel.deleteMany({});
     await OrganizationModel.deleteMany({});
-    await ArticleModel.deleteMany({}); // remove articles as well
 
     // --- 3. SEEDING (The missing part) ---
     console.log('🌱 Seeding data...');
@@ -27,9 +24,8 @@ async function runDemo() {
     ]);
     
     // We map existing IDs to link them dynamically
-    // _id fields are actually ObjectId instances; we cast via unknown first to satisfy TS
-    const initechId = orgs[0]._id as unknown as mongoose.Types.ObjectId;
-    const umbrellaId = orgs[1]._id as unknown as mongoose.Types.ObjectId;
+    const initechId = orgs[0]._id;
+    const umbrellaId = orgs[1]._id;
 
     // 3.2 Create Users linked to Orgs
     // Manual referencial integrity: We use the actual _id from the created organizations to ensure valid references.
@@ -40,16 +36,7 @@ async function runDemo() {
     ];
 
     const users = await UserModel.insertMany(usersData);
-
-    // 3.3 Create some articles using the new service layer
-    const articlesData: Omit<IArticle, '_id'>[] = [
-      { title: 'Welcome', content: 'Hello world', organization: initechId },
-      { title: 'Research', content: 'Test article', organization: umbrellaId }
-    ];
-
-    const articles = await ArticleModel.insertMany(articlesData);
-
-    console.log(`✅ Seeded ${usersData.length} users, ${orgs.length} organizations and ${articles.length} articles`);
+    console.log(`✅ Seeded ${usersData.length} users and ${orgs.length} organizations`);
 
     // --- 4.1 DEMO: CRUD OPERATIONS ---
     console.log('\n🔧 CRUD DEMO:');
@@ -69,23 +56,6 @@ async function runDemo() {
       .select('name email')
       .lean();
     console.log(userPartial);
-
-    // --- 4.3 DEMO: ARTICLE SERVICE LAYER ---
-    console.log('\n📰 ARTICLE SERVICE DEMO:');
-
-    const allArticles = await articleService.listAllArticles();
-    console.log('All articles (lean):', allArticles);
-
-    if (articles.length) {
-      const got = await articleService.getArticleById(articles[0]._id.toString());
-      console.log('Populated article:', got);
-
-      const updated = await articleService.updateArticle(articles[0]._id.toString(), { title: 'Updated title' });
-      console.log('After update:', updated);
-
-      await articleService.deleteArticle(articles[1]._id.toString());
-      console.log('Deleted second article');
-    }
 
     // --- 4.2 DEMO: POPULATE (Simulating JOINs) ---
     console.log('\n🔍 POPULATE:');
@@ -137,4 +107,3 @@ async function runDemo() {
 }
 
 runDemo();
-
